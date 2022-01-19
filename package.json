@@ -1,0 +1,42 @@
+{
+  "name": "code-memory",
+  "version": "1.0.0",
+  "main": "main.js",
+  "private": "true",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2356625718/code-memory.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/2356625718/code-memory/issues"
+  },
+  "homepage": "https://github.com/2356625718/code-memory#readme",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^16.11.21",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0",
+    "typescript": "^4.5.4",
+    "web-vitals": "^2.1.3"
+  },
+  "devDependencies": {
+    "electron": "^16.0.7"
+  },
+  "description": ""
+}
