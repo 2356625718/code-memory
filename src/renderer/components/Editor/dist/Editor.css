@@ -1,0 +1,7 @@
+.CodeMirror-line {
+  font-size: 16px !important;
+  letter-spacing: 1px !important;
+}
+.CodeMirror-scroll {
+  padding: 20px !important;
+}
