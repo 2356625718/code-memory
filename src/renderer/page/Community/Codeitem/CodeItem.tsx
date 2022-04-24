@@ -24,7 +24,7 @@ type IProps = {
 const CodeItem: React.FC<IProps> = ({ isCollect }) => {
   const store = useStore();
 
-  const user = store.getState().user;
+  const user = JSON.parse(sessionStorage.getItem('user') as string);
   console.log(user)
   const [list, setList] = useState([]);
   const [setting, setSetting] = useState({
@@ -253,8 +253,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
             extra={
               <Editor
                 style={{ width: '270px', height: '140px' }}
-                isCommunity={true}
-                value={item.code}
+                data={item.code}
               ></Editor>
             }
           >
@@ -285,8 +284,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
         <div className="modal-box">
           <Editor
             style={{ width: '550px', height: '650px' }}
-            isCommunity={true}
-            value={modal.item.code}
+            data={modal.item.code}
           ></Editor>
           <Card hoverable={true} className="talk-card">
             <div className="talk-box">{mapToTalk(modal.talk)}</div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from 'react-redux';
 import Index from './Index/Index';
-import Login from './User/Login/Index';
+import User from './User/Index';
 import Community from './Community/Community';
 import Setting from './Setting/Setting';
 
@@ -24,11 +24,10 @@ const Page: React.FC = () => {
   return (
     <>
       {(pathName === '/index' || pathName === '/') && <Index></Index>}
-      {pathName === '/user' && <Login></Login>}
+      {pathName === '/user' && <User></User>}
       {pathName === '/community' && <Community></Community>}
       {pathName === '/setting' && <Setting></Setting>}
     </>
   );
 };
-
 export default Page;

@@ -3,6 +3,88 @@
   overflow: hidden;
 
   .content-box {
+    height: 100%;
+    background-color: black;
+    overflow: scroll;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.title-content {
+  background-color: @title-back;
+  height: 100%;
+  min-width: 100px;
+  border-right: 1px solid black;
+
+  .title-header {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+    color: white;
+    font-family: 'webfont' !important;
+    font-size: 14px;
+    border-bottom: 2px solid black;
+    user-select: none;
+  }
+
+  .title-list {
+    height: 100%;
     overflow: scroll;
   }
+}
+
+.add-title:hover {
+  color: rgb(55, 196, 243);
+}
+
+// .hoverd {
+//   background-color: #464849;
+// }
+
+.choosed {
+  background-color: #074874;
+  border: 0.5px solid rgb(55, 196, 243) !important;
+}
+
+.titleItem {
+  width: 100%;
+  height: 30px;
+  padding: 10px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: default;
+  color: #6cb787;
+  .titleInput {
+    width: 120px;
+    overflow: hidden;
+    color: white;
+  }
+  
+  .icons {
+    width: 30%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+
+    .icon {
+      display: inline-block;
+      width: 25px;
+    }
+
+
+    .icon:hover {
+      color: white;
+    }
+  }
+}
+
+.titleItem:hover {
+  background-color: #2a2d2e !important;
 }

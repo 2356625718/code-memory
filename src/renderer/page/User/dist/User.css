@@ -1,8 +1,10 @@
 .user-box {
   margin: 20px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  overflow: scroll;
 }
 .user-box .user-name {
   width: 128px;
@@ -10,4 +12,9 @@
   font-size: 18px;
   text-align: center;
   color: #cca700;
+}
+.calender-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

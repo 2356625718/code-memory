@@ -1,11 +1,14 @@
 "use strict";
 exports.__esModule = true;
 var editorConfig = {
-    mode: { name: 'javascript', json: true },
+    mode: 'text/javascript',
     lineNumbers: true,
     theme: 'ayu-dark',
     tabSize: 2,
-    smartIndent: true
+    smartIndent: true,
+    undoDepth: 200,
+    fontSize: 16,
+    letterSpacing: 1
 };
 var editorReducer = function (state, action) {
     if (state === void 0) { state = editorConfig; }

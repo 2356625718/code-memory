@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.js'
 import 'codemirror/lib/codemirror.css'
@@ -10,62 +10,48 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/mode/go/go'
 import 'codemirror/mode/python/python'
 import 'codemirror/mode/clike/clike'
+import { useStore } from 'react-redux'
 import './Editor.less'
-import { useStore } from 'react-redux';
-import { changeCode } from '@/store/action/code';
-import { useEffect } from 'react'
 
 type IProps = {
   style?: {
     width?: string,
     height?: string
   },
-  isCommunity?: boolean,
-  value?: string
+  data?: any,
+  changeCode?: any,
+  readOnly?: boolean,
 }
 
 const Editor: React.FC<IProps> = (props) => {
-  const editor = useRef(null)
-  let code: any
   const store = useStore()
-  let lastId: any
+  const editor = useRef(null)
+  const editorSetting = store.getState().editor
+  console.log(editorSetting)
+  let code: any
+
+  const setStyle = () => {
+    const el: any = document.getElementsByClassName('CodeMirror')[0]
+    const gutter: any = document.getElementsByClassName('CodeMirror-gutters')[0]
+    el.style.fontSize = editorSetting.fontSize
+    el.style.letterSpacing = editorSetting.letterSpacing
+    el.style.backgroundColor = editorSetting.backgroundColor
+    gutter.style.backgroundColor =  editorSetting.backgroundColor
+  }
 
   useEffect(() => {
-    if (editor.current && !props.isCommunity) {
-      code = CodeMirror.fromTextArea(editor.current, {
-        mode: "text/javascript", //模式
-        lineNumbers: true,  // 行号
-        theme: 'ayu-mirage', // 主题
-        tabSize: 2,  // tab字符  
-        smartIndent: true, // 智能缩进
-      })
+    if (editor.current) {
+      code = CodeMirror.fromTextArea(editor.current, editorSetting)
       code.setSize(props?.style?.width || '100%', props?.style?.height || '100%')
-      code.setValue(store.getState().code.isChanging.code)
-      lastId = store.getState().code.isChanging.id
-      code.on('change', (el: any, obj: any) => {
-        if (obj.origin !== 'setValue') store.dispatch(changeCode(store.getState().code.isChanging.id, code.getValue()))
-      })
-      store.subscribe(() => {
-        let nowCode = store.getState().code.isChanging
-        if (nowCode && nowCode.id !== lastId) {
-          code.setValue(nowCode.code)
-          lastId = nowCode.id
-        }
-      })
+      code.setValue(props.data)
+      setStyle()
+      if (!props.readOnly) {
+        code.on('change', () => {
+          props.changeCode(code.getValue())
+        })
+      }
     }
-    if (editor.current && props.isCommunity) {
-      console.log(props)
-      code = CodeMirror.fromTextArea(editor.current, {
-        mode: {name: "javascript", json: true},
-        lineNumbers: true,
-        theme: 'ayu-dark',
-        tabSize: 2,
-        smartIndent: true,
-      })
-      code.setSize(props?.style?.width || '100%', props?.style?.height || '100%')
-      code.setValue(props.value)
-    }
-  }, [props.value])
+  }, [])
 
 
 

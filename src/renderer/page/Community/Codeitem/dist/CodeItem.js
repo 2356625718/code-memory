@@ -57,7 +57,7 @@ var community_1 = require("request/community");
 var CodeItem = function (_a) {
     var isCollect = _a.isCollect;
     var store = react_redux_1.useStore();
-    var user = store.getState().user;
+    var user = JSON.parse(sessionStorage.getItem('user'));
     console.log(user);
     var _b = react_1.useState([]), list = _b[0], setList = _b[1];
     var _c = react_1.useState({
@@ -242,14 +242,14 @@ var CodeItem = function (_a) {
                     react_1["default"].createElement(IconText, { icon: icons_1.LikeOutlined, text: item.goodActionNumber, key: "list-vertical-like-o", value: item.goodAction, color: "red", id: item.id, type: 0 }),
                     react_1["default"].createElement(IconText, { icon: icons_1.StarOutlined, text: item.collectActionNumber, key: "list-vertical-star-o", value: item.collectAction, color: "yellow", id: item.id, type: 1 }),
                     react_1["default"].createElement(IconText, { icon: icons_1.MessageOutlined, text: item.talkActionNumber, key: "list-vertical-message" }),
-                ], extra: react_1["default"].createElement(Editor_1["default"], { style: { width: '270px', height: '140px' }, isCommunity: true, value: item.code }) },
+                ], extra: react_1["default"].createElement(Editor_1["default"], { style: { width: '270px', height: '140px' }, data: item.code }) },
                 react_1["default"].createElement(antd_1.List.Item.Meta, { avatar: react_1["default"].createElement(antd_1.Avatar, { src: "https://joeschmoe.io/api/v1/random" }), title: item.userName }),
                 item.description)); } }),
         react_1["default"].createElement(antd_1.Modal, { visible: modal.isShow, mask: true, title: react_1["default"].createElement("div", { style: { height: '10px' } }, "\u8BE6\u60C5"), footer: null, width: 1026, destroyOnClose: true, onCancel: function () {
                 return setModal(__assign(__assign({}, modal), { isShow: false, talk: [], item: { id: '', code: '' } }));
             } },
             react_1["default"].createElement("div", { className: "modal-box" },
-                react_1["default"].createElement(Editor_1["default"], { style: { width: '550px', height: '650px' }, isCommunity: true, value: modal.item.code }),
+                react_1["default"].createElement(Editor_1["default"], { style: { width: '550px', height: '650px' }, data: modal.item.code }),
                 react_1["default"].createElement(antd_1.Card, { hoverable: true, className: "talk-card" },
                     react_1["default"].createElement("div", { className: "talk-box" }, mapToTalk(modal.talk)),
                     react_1["default"].createElement(antd_1.Divider, null),
