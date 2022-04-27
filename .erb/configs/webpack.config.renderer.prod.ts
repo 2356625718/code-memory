@@ -70,6 +70,31 @@ const configuration: webpack.Configuration = {
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
         exclude: /\.module\.s?(c|a)ss$/,
       },
+      {
+        test: /\.less$/i,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                strictMath: true,
+              },
+            },
+          },
+          {
+            loader: 'style-resources-loader',
+            options: {
+              patterns: webpackPaths.srcRendererPath + '/static/style/common.less',
+          },
+        }],
+      },
       // Fonts
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,

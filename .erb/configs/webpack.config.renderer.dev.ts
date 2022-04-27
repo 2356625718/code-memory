@@ -85,35 +85,29 @@ const configuration: webpack.Configuration = {
         exclude: /\.module\.s?(c|a)ss$/,
       },
       {
-        test: /\.less$/,
+        test: /\.less$/i,
         use: [
           'style-loader',
           {
             loader: 'css-loader',
             options: {
               modules: true,
-              sourceMap: true,
-              importLoaders: 1,
             },
           },
-          'less-loader',
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                strictMath: true,
+              },
+            },
+          },
           {
             loader: 'style-resources-loader',
             options: {
               patterns: webpackPaths.srcRendererPath + '/static/style/common.less',
           },
         }],
-        include: /\.module\.less$/
-      },
-      {
-        test: /\.less$/,
-        use: ['style-loader', 'css-loader', 'less-loader', {
-          loader: 'style-resources-loader',
-          options: {
-            patterns: webpackPaths.srcRendererPath + '/static/style/common.less',
-        },
-      }],
-        exclude: /\.module\.less$/,
       },
       // Fonts
       {

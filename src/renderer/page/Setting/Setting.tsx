@@ -1,18 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import classNames from 'classnames';
-import { List, Select, Input, Button } from 'antd';
+import { List, Select, Input, Button, Switch } from 'antd';
 import { useStore } from 'react-redux';
 import color from 'ew-color-picker';
 import 'ew-color-picker/dist/ew-color-picker.min.css';
 import 'ew-color-picker/src/style/ew-color-picker.css';
 import './Setting.less';
 import { changeEditor } from '@/store/action/editor';
+import { current } from 'immer';
 
 const Setting: React.FC = () => {
   const store = useStore();
   const colorRef = useRef(null);
   const stateRef = useRef(null);
-  let colorInstance
+  let colorInstance: any;
 
   const [setting, setSetting] = useState({
     header: 0,
@@ -27,47 +28,77 @@ const Setting: React.FC = () => {
       letterSpacing: 1,
       backgroundColor: 'rgba(0, 0, 0, 1)',
     },
+    current: {
+      cloud: true,
+      position: true
+    }
   });
 
   useEffect(() => {
-    const editorSetting = store.getState().editor;
-    setSetting({
-      ...setting,
-      editor: editorSetting,
-    });
-    if (colorRef.current) {
-      colorInstance = new color({
-        el: colorRef.current, //dom元素
-        alpha: true, //打开alpha
-        size: {
-          width: 100,
-          height: 35,
-        }, //colorPicker 类型，包含 normal、medium、small、mini 四个值或您自己定义的对象，最小值为 25px
-        defaultColor: editorSetting.backgroundColor,
-        changeColor: (color: any) => {
-          setSetting({
-            ...setting,
-            editor: {
-              ...setting.editor,
-              backgroundColor: color,
-            },
-          });
-        },
+    if (setting.header === 0) {
+      const editorSetting = store.getState().editor;
+      setSetting({
+        ...setting,
+        editor: editorSetting,
       });
-      console.log(colorInstance)
+      if (colorRef.current) {
+        colorInstance = new color({
+          el: colorRef.current, //dom元素
+          alpha: true, //打开alpha
+          size: {
+            width: 100,
+            height: 35,
+          }, //colorPicker 类型，包含 normal、medium、small、mini 四个值或您自己定义的对象，最小值为 25px
+          defaultColor: editorSetting.backgroundColor,
+          sure: (color: any) => {
+            console.log(color);
+            setSetting({
+              ...setting,
+              editor: {
+                ...setting.editor,
+                backgroundColor: color,
+              },
+            });
+          },
+          clear: (color: any) => {
+            colorInstance.updateColor('rgba(0, 0, 0, 1)');
+            setSetting({
+              ...setting,
+              editor: {
+                ...setting.editor,
+                backgroundColor: 'rgba(0, 0, 0, 1)',
+              },
+            });
+            return false;
+          },
+        });
+      }
     }
     return () => {
       store.dispatch(changeEditor(stateRef.current));
     };
-  }, []);
+  }, [setting.header]);
 
   useEffect(() => {
-    // @ts-ignore
-    stateRef.current = setting.editor;
-    console.log(setting.editor.backgroundColor)
-    // @ts-ignore
-    document.getElementsByClassName('ew-color-picker-box')[0].style.backgroundColor = setting.editor.backgroundColor
-  }, [setting.editor]);
+    if (setting.header === 0) {
+      // @ts-ignore
+      stateRef.current = setting.editor;
+      // @ts-ignore
+      document.getElementsByClassName(
+        'ew-color-picker-box'
+        // @ts-ignore
+      )[0].style.backgroundColor = setting.editor.backgroundColor;
+    } else if (setting.header === 1) {
+      // @ts-ignore
+      stateRef.current = setting.current;
+    }
+  }, [setting]);
+
+  useEffect(() => {
+    return () => {
+      window.utils.storePosition(setting.current)
+    }
+  }, [])
 
   const data = [
     {
@@ -242,8 +273,51 @@ const Setting: React.FC = () => {
     },
     {
       name: '背景颜色:',
-      jsx: <div ref={colorRef}>选择颜色</div>,
+      jsx: <div ref={colorRef}></div>,
     },
+  ];
+
+  const data2 = [
+    {
+      name: '自动云端存储:',
+      jsx: (
+        <Switch
+          checkedChildren=" 是 "
+          unCheckedChildren=" 否 "
+          defaultChecked
+          size='default'
+          style={{marginTop: '10px'}}
+          checked={setting.current.cloud}
+          onChange={(checked) => setSetting({
+            ...setting,
+            current: {
+              ...setting.current,
+              cloud: checked
+            }
+          })}
+        ></Switch>
+      ),
+    },
+    {
+      name: '插件取用代码片段位置:',
+      jsx: (
+        <Switch
+          checkedChildren=" 本地文件 "
+          unCheckedChildren=" 云端 "
+          defaultChecked
+          size='default'
+          checked={setting.current.position}
+          style={{marginTop: '10px'}}
+          onChange={(checked) => setSetting({
+            ...setting,
+            current: {
+              ...setting.current,
+              position: checked
+            }
+          })}
+        ></Switch>
+      ),
+    }
   ];
 
   return (
@@ -276,44 +350,76 @@ const Setting: React.FC = () => {
               })
             }
           >
-            社区
+            通用
           </div>
         </div>
       </div>
       <div className="setting-title">
-        {setting.header === 0 ? '编辑器设置' : '社区设置'}
+        {setting.header === 0 ? '编辑器设置' : '通用设置'}
       </div>
-      <div className="setting-body"></div>
-      {data.map((item: any, index: any) => {
-        return (
-          <div className="setting-body-item" key={index}>
-            <div style={{ marginBottom: '5px' }}>{item.name}</div>
-            {item.jsx}
-          </div>
-        );
-      })}
-      <Button
-        type="primary"
-        style={{ marginLeft: '100px', marginTop: '20px' }}
-        onClick={() => {
-          setSetting({
-            ...setting,
-            editor: {
-              mode: 'text/javascript', //模式
-              lineNumbers: true, // 行号
-              theme: 'ayu-dark', //主体
-              tabSize: 2, // tab字符
-              smartIndent: true, // 智能缩进,
-              undoDepth: 200, //撤销级数,
-              fontSize: 16,
-              letterSpacing: 1,
-              backgroundColor: 'rgba(0, 0, 0, 1)',
-            },
-          });
-        }}
-      >
-        还原默认设置
-      </Button>
+      <div className="setting-body">
+        {setting.header === 0 && (
+          <>
+            {data.map((item: any, index: any) => {
+              return (
+                <div className="setting-body-item" key={index}>
+                  <div style={{ marginBottom: '5px' }}>{item.name}</div>
+                  {item.jsx}
+                </div>
+              );
+            })}
+            <Button
+              type="primary"
+              style={{ marginLeft: '100px', marginTop: '20px' }}
+              onClick={() => {
+                setSetting({
+                  ...setting,
+                  editor: {
+                    mode: 'text/javascript', //模式
+                    lineNumbers: true, // 行号
+                    theme: 'ayu-dark', //主体
+                    tabSize: 2, // tab字符
+                    smartIndent: true, // 智能缩进,
+                    undoDepth: 200, //撤销级数,
+                    fontSize: 16,
+                    letterSpacing: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 1)',
+                  },
+                });
+              }}
+            >
+              还原默认设置
+            </Button>
+          </>
+        )}
+        {setting.header === 1 && (
+          <>
+            {data2.map((item: any, index: any) => {
+              return (
+                <div className="setting-body-item" key={index}>
+                  <div style={{ marginBottom: '5px' }}>{item.name}</div>
+                  {item.jsx}
+                </div>
+              );
+            })}
+            <Button
+              type="primary"
+              style={{ marginLeft: '100px', marginTop: '20px' }}
+              onClick={() => {
+                setSetting({
+                  ...setting,
+                  current: {
+                    cloud: true,
+                    position: true
+                  }
+                })
+              }}
+            >
+              还原默认设置
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 };

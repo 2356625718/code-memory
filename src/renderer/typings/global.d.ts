@@ -1,4 +1,5 @@
 interface Window {
-  electron: any
+  electron: any,
+  utils: any,
 }
   

@@ -5,7 +5,7 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from '../utils/util';
+const { resolveHtmlPath } = require('../utils/util')
 
 export default class AppUpdater {
   constructor() {

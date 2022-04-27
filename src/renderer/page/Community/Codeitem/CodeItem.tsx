@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   List,
   Avatar,
@@ -11,7 +11,12 @@ import {
   Divider,
   Comment,
 } from 'antd';
-import { MessageOutlined, LikeOutlined, StarOutlined, RollbackOutlined } from '@ant-design/icons';
+import {
+  MessageOutlined,
+  LikeOutlined,
+  StarOutlined,
+  RollbackOutlined,
+} from '@ant-design/icons';
 import { useStore } from 'react-redux';
 import './CodeItem.less';
 import Editor from '@/components/Editor/Editor';
@@ -19,13 +24,15 @@ import communityRequest from 'request/community';
 
 type IProps = {
   isCollect: boolean;
+  changeAgain: any,
+  again: boolean,
 };
 
-const CodeItem: React.FC<IProps> = ({ isCollect }) => {
+const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
   const store = useStore();
 
   const user = JSON.parse(sessionStorage.getItem('user') as string);
-  console.log(user)
+  console.log(user);
   const [list, setList] = useState([]);
   const [setting, setSetting] = useState({
     pageSize: 4,
@@ -37,37 +44,43 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
     isShow: false,
     item: {
       id: '',
-      code: ''
+      code: '',
     },
     talk: [],
     talkValue: '',
     reply: false,
     replyItem: {
       deep: 1,
-      id: 1
+      id: 1,
     },
   });
+
+  useEffect(() => {
+    getList()
+    changeAgain()
+  }, [again])
 
   const CommentWithChild = (props: any) => (
     <div className="comment-box">
       <Comment
-        actions={[<span key="comment-nested-reply-to" onClick={() => {
-          setModal({
-            ...modal,
-            reply: true,
-            replyItem: props.data,
-            talkValue: '请输入回复内容',
-          })
-        }}>回复</span>]}
+        actions={[
+          <span
+            key="comment-nested-reply-to"
+            onClick={() => {
+              setModal({
+                ...modal,
+                reply: true,
+                replyItem: props.data,
+                talkValue: '请输入回复内容',
+              });
+            }}
+          >
+            回复
+          </span>,
+        ]}
         author={<a>{props.data.userInfo.userName}</a>}
-        avatar={
-          <Avatar src="https://joeschmoe.io/api/v1/random" alt="Han Solo" />
-        }
-        content={
-          <p>
-            { props.data.content }
-          </p>
-        }
+        avatar={<Avatar src={props.data.userInfo.img} alt="头像" />}
+        content={<p>{props.data.content}</p>}
       >
         {props.children}
       </Comment>
@@ -119,7 +132,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
         talk: [],
       });
     }
-  }
+  };
 
   const putAction = async (type: number, is: boolean, codeId: number) => {
     let data: any = {
@@ -143,7 +156,9 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
   const mapToTalk = (arr?: any) => {
     if (!Array.isArray(arr) || arr.length === 0) return;
     let res = arr.map((item: any, index: any) => (
-      <CommentWithChild data={item} key={item.id}>{mapToTalk(item?.child)}</CommentWithChild>
+      <CommentWithChild data={item} key={item.id}>
+        {mapToTalk(item?.child)}
+      </CommentWithChild>
     ));
     return res;
   };
@@ -173,34 +188,34 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
 
   useEffect(() => {
     if (modal.item.id) {
-      getTalk()
+      getTalk();
     }
-  }, [modal.item.id])
+  }, [modal.item.id]);
 
   const handleSubmit = async () => {
-    if (!modal.talkValue.length) return
-    let data
+    if (!modal.talkValue.length) return;
+    let data;
     if (!modal.reply) {
       data = {
         userId: user.id,
         codeId: modal.item.id,
         content: modal.talkValue,
         deep: 1,
-      }
+      };
     } else {
       data = {
         userId: user.id,
         codeId: modal.item.id,
         content: modal.talkValue,
         deep: 2,
-        replyToId: modal.replyItem.id
-      }
+        replyToId: modal.replyItem.id,
+      };
     }
-    let res = await communityRequest.doTalk(data)
-      if (res.data.status) {
-        getTalk()
-      }
-  }
+    let res = await communityRequest.doTalk(data);
+    if (res.data.status) {
+      getTalk();
+    }
+  };
 
   return (
     <div>
@@ -220,8 +235,8 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
             onClick={() => {
               setModal({
                 ...modal,
-                item
-              })
+                item,
+              });
             }}
             className="codeListItem"
             key={item.id}
@@ -254,11 +269,12 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
               <Editor
                 style={{ width: '270px', height: '140px' }}
                 data={item.code}
+                readOnly={true}
               ></Editor>
             }
           >
             <List.Item.Meta
-              avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
+              avatar={<Avatar src={item.img} />}
               title={item.userName}
             />
             {item.description}
@@ -272,41 +288,61 @@ const CodeItem: React.FC<IProps> = ({ isCollect }) => {
         footer={null}
         width={1026}
         destroyOnClose={true}
-        onCancel={() =>
+        onCancel={() => {
           setModal({
             ...modal,
             isShow: false,
             talk: [],
-            item: { id: '', code: ''}
-          })
-        }
+            talkValue: '',
+            item: { id: '', code: '' },
+          });
+          getList();
+        }}
       >
         <div className="modal-box">
           <Editor
             style={{ width: '550px', height: '650px' }}
             data={modal.item.code}
+            readOnly={true}
           ></Editor>
           <Card hoverable={true} className="talk-card">
             <div className="talk-box">{mapToTalk(modal.talk)}</div>
             <Divider></Divider>
             <div className="input-box">
               <Form.Item>
-                <Input.TextArea rows={4} value={modal.talkValue} onChange={(e: any) => setModal({
-                  ...modal,
-                  talkValue: e.target.value
-                })}/>
+                <Input.TextArea
+                  rows={4}
+                  value={modal.talkValue}
+                  onChange={(e: any) =>
+                    setModal({
+                      ...modal,
+                      talkValue: e.target.value,
+                    })
+                  }
+                />
               </Form.Item>
               <Form.Item>
-                <Button htmlType="submit" type="primary" onClick={() => handleSubmit()}>
-                  { modal.reply ? '回复评论' : '添加评论'}
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  onClick={() => handleSubmit()}
+                >
+                  {modal.reply ? '回复评论' : '添加评论'}
                 </Button>
-                { modal.reply ? <RollbackOutlined style={{marginLeft: '15px', fontSize: '20px'}} onClick={() => {
-                  setModal({
-                    ...modal,
-                    reply: false,
-                    talkValue: ''
-                  })
-                }}/> : '' }
+                {modal.reply ? (
+                  <RollbackOutlined
+                    style={{ marginLeft: '15px', fontSize: '20px' }}
+                    onClick={() => {
+                      setModal({
+                        ...modal,
+                        reply: false,
+                        talkValue: '',
+                      });
+                    }}
+                  />
+                ) : (
+                  ''
+                )}
               </Form.Item>
             </div>
           </Card>

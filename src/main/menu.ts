@@ -54,29 +54,29 @@ export default class MenuBuilder {
 
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
     const subMenuAbout: DarwinMenuItemConstructorOptions = {
-      label: 'Electron',
+      label: '代码记忆',
       submenu: [
         {
-          label: 'About ElectronReact',
+          label: '关于代码记忆',
           selector: 'orderFrontStandardAboutPanel:',
         },
         { type: 'separator' },
-        { label: 'Services', submenu: [] },
+        { label: '服务', submenu: [] },
         { type: 'separator' },
         {
-          label: 'Hide ElectronReact',
+          label: '隐藏应用',
           accelerator: 'Command+H',
           selector: 'hide:',
         },
         {
-          label: 'Hide Others',
+          label: '隐藏其他应用',
           accelerator: 'Command+Shift+H',
           selector: 'hideOtherApplications:',
         },
-        { label: 'Show All', selector: 'unhideAllApplications:' },
+        { label: '显示所有应用', selector: 'unhideAllApplications:' },
         { type: 'separator' },
         {
-          label: 'Quit',
+          label: '退出应用',
           accelerator: 'Command+Q',
           click: () => {
             app.quit();

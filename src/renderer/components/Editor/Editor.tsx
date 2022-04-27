@@ -27,7 +27,6 @@ const Editor: React.FC<IProps> = (props) => {
   const store = useStore()
   const editor = useRef(null)
   const editorSetting = store.getState().editor
-  console.log(editorSetting)
   let code: any
 
   const setStyle = () => {
@@ -41,10 +40,11 @@ const Editor: React.FC<IProps> = (props) => {
 
   useEffect(() => {
     if (editor.current) {
-      code = CodeMirror.fromTextArea(editor.current, editorSetting)
+      code = CodeMirror.fromTextArea(editor.current, Object.assign({}, editorSetting, {readOnly: props?.readOnly}))
       code.setSize(props?.style?.width || '100%', props?.style?.height || '100%')
       code.setValue(props.data)
       setStyle()
+      console.log(props.readOnly)
       if (!props.readOnly) {
         code.on('change', () => {
           props.changeCode(code.getValue())
