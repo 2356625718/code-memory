@@ -1,4 +1,4 @@
-import { Avatar, Card, Divider, message, Upload } from 'antd';
+import { Avatar, Button, Card, Divider, message, Upload } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from 'react-redux';
@@ -156,6 +156,7 @@ const User: React.FC = () => {
 
   return (
     <div className="user-box">
+      <div className='login-out'><Button type="default" danger>退出登录</Button></div>
       <Upload
         name="avatar"
         listType="picture-card"

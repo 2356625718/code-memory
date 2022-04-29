@@ -1,19 +1,48 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
 import MenuBuilder from './menu';
-const { resolveHtmlPath } = require('../utils/util')
+const { resolveHtmlPath } = require('../utils/util');
 
-export default class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
+function checkUpdate(){
+  //检测更新
+  autoUpdater.checkForUpdates()
+  
+  //监听'error'事件
+  autoUpdater.on('error', (err) => {
+    console.log(err)
+  })
+  
+  //监听'update-available'事件，发现有新版本时触发
+  autoUpdater.on('update-available', () => {
+    console.log('found new version')
+  })
+  
+  //默认会自动下载新版本，如果不想自动下载，设置autoUpdater.autoDownload = false
+  
+  //监听'update-downloaded'事件，新版本下载完成时触发
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: '应用更新',
+      message: '发现新版本，是否更新？',
+      buttons: ['是', '否']
+    }).then((buttonIndex) => {
+      if(buttonIndex.response == 0) {  //选择是，则退出程序，安装新版本
+        autoUpdater.quitAndInstall() 
+        app.quit()
+      }
+    })
+  })
 }
+
+app.on('ready', () => {
+  //每次启动程序，就检查更新
+  checkUpdate()
+})
+
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -43,9 +72,10 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
-  if (isDevelopment) {
-    await installExtensions();
-  }
+  // if (isDevelopment) {
+  //   await installExtensions();
+  // }
+  await installExtensions();
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -61,12 +91,12 @@ const createWindow = async () => {
     height: 928,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      preload: path.join(__dirname, '../utils/expose.ts'),
-      webSecurity: false
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false,
     },
   });
 
-  mainWindow.loadURL(resolveHtmlPath('/'));
+  mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -91,11 +121,20 @@ const createWindow = async () => {
     event.preventDefault();
     shell.openExternal(url);
   });
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
 };
+
+// main
+ipcMain.on('show-context-menu', (event: any) => {
+  const template = [
+    { label: '撤销', accelerator: 'Command+Z', selector: 'undo:' },
+    { label: '剪切', accelerator: 'Command+X', selector: 'cut:' },
+    { label: '复制', accelerator: 'Command+C', selector: 'copy:' },
+    { label: '粘贴', accelerator: 'Command+V', selector: 'paste:' },
+  ];
+  const menu = Menu.buildFromTemplate(template as any);
+  //@ts-ignore
+  menu.popup(BrowserWindow.fromWebContents(event.sender));
+});
 
 /**
  * Add event listeners...

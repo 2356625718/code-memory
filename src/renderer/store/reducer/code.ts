@@ -7,13 +7,12 @@ type Code = {
   code: string
 }
 
-
+// 初始值
 const codes: Code[] = []
-
-
 
 const codeReducer = (state = codes, action: CodeAction) => {
   switch (action.type) {
+    // 设置代码片段数据
     case 'setCode': {
       return action.payload.code;
     }

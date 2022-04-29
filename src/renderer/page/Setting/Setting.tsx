@@ -75,7 +75,7 @@ const Setting: React.FC = () => {
       }
     }
     return () => {
-      store.dispatch(changeEditor(stateRef.current));
+      if (setting.header === 0) store.dispatch(changeEditor(stateRef.current));
     };
   }, [setting.header]);
 

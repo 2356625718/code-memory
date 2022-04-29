@@ -1,6 +1,7 @@
 {
-  "name": "code-memory",
+  "name": "code",
   "description": "code-memory",
+  "version": "1.0.1",
   "scripts": {
     "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
     "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.prod.ts",
@@ -13,7 +14,8 @@
     "start:main": "cross-env NODE_ENV=development electron -r ts-node/register/transpile-only ./src/main/main.ts",
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "cross-env GH_TOKEN=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 electron-builder"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -31,7 +33,7 @@
   },
   "build": {
     "productName": "代码记忆",
-    "appId": "org.erb.ElectronReact",
+    "appId": "org.erb.codeMemory",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -44,8 +46,7 @@
       "target": {
         "target": "default",
         "arch": [
-          "arm64",
-          "x64"
+          "arm64"
         ]
       },
       "type": "distribution",
@@ -87,11 +88,7 @@
     "extraResources": [
       "./assets/**"
     ],
-    "publish": {
-      "provider": "github",
-      "owner": "周雨",
-      "repo": "code-memory"
-    }
+    "publish": ["github"]
   },
   "repository": {
     "type": "git",

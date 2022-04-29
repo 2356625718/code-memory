@@ -108,6 +108,17 @@ const configuration: webpack.Configuration = {
               patterns: webpackPaths.srcRendererPath + '/static/style/common.less',
           },
         }],
+        include: /\.module\.less$/
+      },
+      {
+        test: /\.less$/i,
+        use: ['style-loader', 'css-loader', 'less-loader', {
+          loader: 'style-resources-loader',
+          options: {
+            patterns: webpackPaths.srcRendererPath + '/static/style/common.less',
+        },
+      }],
+        exclude: /\.module\.less$/,
       },
       // Fonts
       {
