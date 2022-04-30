@@ -1,23 +1,27 @@
 import { Avatar, Button, Card, Divider, message, Upload } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import * as echarts from 'echarts';
 import CodeRequest from 'request/code';
 import userRequest from 'request/user';
-import { cosUpload, cosDown } from 'utils/cos'
+import { cosUpload } from 'utils/cos';
 import './User.less';
+import store from '@/store/store';
+import { setUser } from '@/store/action/user';
 
 const User: React.FC = () => {
-  let user = JSON.parse(sessionStorage.getItem('user') as string);
-  const ref = useRef(null);
-
+  let user = JSON.parse(localStorage.getItem('user') as string);
   const [upload, setUpload] = useState({
     loading: false,
-    imgUrl: '',
-  })
+    imgUrl:
+      user.img ||
+      'https://test-1304439477.cos.ap-chengdu.myqcloud.com/IMG_7898.PNG',
+  });
 
+  const ref = useRef(null);
+
+  // 获取日历数据
   const getDate = async () => {
     let res = await CodeRequest.getCreateDate({
       userId: user.id,
@@ -28,12 +32,7 @@ const User: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log(user)
-    setUpload({
-      ...upload,
-      loading: false,
-      imgUrl: user.img || 'https://test-1304439477.cos.ap-chengdu.myqcloud.com/IMG_7898.PNG'
-    })
+    // echarts配置
     getDate().then((res) => {
       let option = {
         title: {
@@ -42,7 +41,7 @@ const User: React.FC = () => {
           text: '代码片段贡献日历图',
         },
         tooltip: {
-          trigger: 'item'
+          trigger: 'item',
         },
         visualMap: {
           type: 'piecewise',
@@ -50,8 +49,8 @@ const User: React.FC = () => {
             { gte: 4, label: '>= 4' },
             { gte: 3, lt: 4, label: '3' },
             { gte: 2, lt: 3, label: '2' },
-            { gte: 1, lt: 2, label: '1'},
-            { gte: 0, lt: 1, label: '0'},
+            { gte: 1, lt: 2, label: '1' },
+            { gte: 0, lt: 1, label: '0' },
           ],
           outOfRange: {
             color: '#eee',
@@ -88,17 +87,17 @@ const User: React.FC = () => {
     });
   }, []);
 
+  // 上传头像中
   const handleChange = (info: any) => {
-    console.log(info)
     if (info.file.status === 'uploading') {
       setUpload({
         ...upload,
-        loading: true
-      })
-      return
+        loading: true,
+      });
+      return;
     }
   };
-
+  // 上传头像前类型大小校验
   function beforeUpload(file: any) {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
@@ -111,52 +110,52 @@ const User: React.FC = () => {
     return isJpgOrPng && isLt2M;
   }
 
-  const uploadButton = (
-    <div>
-      {upload.loading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>上传头像</div>
-    </div>
-  );
-
+  // 上传头像到oss桶
   const uploadImg = async (file: any) => {
     if (!beforeUpload(file.file)) {
       setUpload({
         ...upload,
-        loading: false
-      })
-      return
+        loading: false,
+      });
+      return;
     }
-    const extname = window.utils.path.extname(file.file.name)
-    const fileName = file.filename + '_' + uuidv4() + extname
-    let res: any = await cosUpload(fileName, file.file)
+    const extname = window.utils.path.extname(file.file.name);
+    const fileName = file.filename + '_' + uuidv4() + extname;
+    let res: any = await cosUpload(fileName, file.file);
     if (res) {
-      console.log(res)
-      message.success('上传成功')
+      message.success('上传成功');
+      const url = 'https://' + res.Location;
       let res2 = await userRequest.updateImg({
         id: user.id,
-        img: 'https://' + res.Location
-      })
+        img: url,
+      });
       if (res2.data.status) {
         setUpload({
           ...upload,
-          imgUrl: 'https://' + res.Location,
-          loading: false
-        })
-        return
+          imgUrl: url,
+          loading: false,
+        });
+        user.img = url;
+        localStorage.setItem('user', JSON.stringify(user));
+        store.dispatch(setUser(user));
+        return;
       }
     } else {
-      message.error('上传失败')
+      message.error('上传失败');
     }
     setUpload({
       ...upload,
-      loading: false
-    })
-  }
- 
+      loading: false,
+    });
+  };
 
   return (
     <div className="user-box">
-      <div className='login-out'><Button type="default" danger>退出登录</Button></div>
+      <div className="login-out">
+        <Button type="default" danger>
+          退出登录
+        </Button>
+      </div>
       <Upload
         name="avatar"
         listType="picture-card"
@@ -167,7 +166,18 @@ const User: React.FC = () => {
         accept=".png,.jpg,.PNG,.JPG"
         customRequest={(file: any) => uploadImg(file)}
       >
-        {upload.imgUrl ? <img src={upload.imgUrl} alt="avatar" style={{ width: '180px', height: '180px', borderRadius: '50%' }} /> : uploadButton}
+        {upload.imgUrl ? (
+          <img
+            src={upload.imgUrl}
+            alt="avatar"
+            style={{ width: '180px', height: '180px', borderRadius: '50%' }}
+          />
+        ) : (
+          <div>
+            {upload.loading ? <LoadingOutlined /> : <PlusOutlined />}
+            <div style={{ marginTop: 8 }}>上传头像</div>
+          </div>
+        )}
       </Upload>
       <div className="user-name">{user.userName}</div>
       <div className="user-info">

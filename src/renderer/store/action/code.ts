@@ -3,7 +3,7 @@ export type CodeAction = {
   payload?: any,
 }
 
-export const setCode= (code: any): CodeAction => {
+export const setCode = (code: any): CodeAction => {
   return {
     type: 'setCode',
     payload: {

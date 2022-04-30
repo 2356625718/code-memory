@@ -24,41 +24,39 @@ import communityRequest from 'request/community';
 
 type IProps = {
   isCollect: boolean;
-  changeAgain: any,
-  again: boolean,
+  changeAgain: any;
+  again: boolean;
 };
 
 const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
-  const store = useStore();
-
-  const user = JSON.parse(sessionStorage.getItem('user') as string);
-  console.log(user);
+  const user = JSON.parse(localStorage.getItem('user') as string);
   const [list, setList] = useState([]);
   const [setting, setSetting] = useState({
-    pageSize: 4,
-    pageNum: 1,
-    len: 0,
+    pageSize: 4, // 每页数量
+    pageNum: 1, // 当前页码
+    len: 0, //总数据长度
   });
 
   const [modal, setModal] = useState({
-    isShow: false,
+    isShow: false, // 显示modal
     item: {
       id: '',
       code: '',
-    },
-    talk: [],
-    talkValue: '',
-    reply: false,
+    }, // 每一个列表项
+    talk: [], // 聊天数据
+    talkValue: '', // 回复数据
+    reply: false, // 回复中
     replyItem: {
+      // 回复的聊天数据项
       deep: 1,
       id: 1,
     },
   });
 
   useEffect(() => {
-    getList()
-    changeAgain()
-  }, [again])
+    getList();
+    changeAgain();
+  }, [again]);
 
   const CommentWithChild = (props: any) => (
     <div className="comment-box">
@@ -71,7 +69,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
                 ...modal,
                 reply: true,
                 replyItem: props.data,
-                talkValue: '请输入回复内容',
+                talkValue: '',
               });
             }}
           >
@@ -87,6 +85,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     </div>
   );
 
+  // 获取社区代码片段列表
   const getList = async (pageNum?: number) => {
     let res: any = await communityRequest.getList({
       userId: user.id,
@@ -96,6 +95,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     });
     if (res.data.status) {
       let data = res.data.data;
+      // 收藏
       if (isCollect) {
         setSetting({
           pageNum: pageNum || setting.pageNum,
@@ -104,6 +104,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
         });
         setList(data.collectArray);
       } else {
+        // 非收藏
         setSetting({
           pageNum: pageNum || setting.pageNum,
           pageSize: 4,
@@ -114,11 +115,11 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     }
   };
 
+  // 获取聊天内容
   const getTalk = async () => {
-    let res = await communityRequest.getTalk({
+    let { data } = await communityRequest.getTalk({
       id: modal.item.id,
     });
-    let data = res.data;
     if (data.status) {
       setModal({
         ...modal,
@@ -134,6 +135,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     }
   };
 
+  // 进行点赞、收藏操作
   const putAction = async (type: number, is: boolean, codeId: number) => {
     let data: any = {
       userId: user.id,
@@ -153,6 +155,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     }
   };
 
+  // 生成回复列表
   const mapToTalk = (arr?: any) => {
     if (!Array.isArray(arr) || arr.length === 0) return;
     let res = arr.map((item: any, index: any) => (
@@ -178,6 +181,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     </Space>
   );
 
+  // 监听收藏按钮变化
   useEffect(() => {
     getList();
     setSetting({
@@ -186,6 +190,7 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
     });
   }, [isCollect]);
 
+  // 监听代码片段点击变动
   useEffect(() => {
     if (modal.item.id) {
       getTalk();
@@ -266,11 +271,13 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
               />,
             ]}
             extra={
-              <Editor
-                style={{ width: '270px', height: '140px' }}
-                data={item.code}
-                readOnly={true}
-              ></Editor>
+              <div onClick={(e: any) => e.stopPropagation()} style={{display: 'inline-block'}}>
+                <Editor
+                  style={{ width: '270px', height: '140px' }}
+                  data={item.code}
+                  readOnly={true}
+                ></Editor>
+              </div>
             }
           >
             <List.Item.Meta
@@ -306,13 +313,14 @@ const CodeItem: React.FC<IProps> = ({ isCollect, again, changeAgain }) => {
             readOnly={true}
           ></Editor>
           <Card hoverable={true} className="talk-card">
-            <div className="talk-box">{mapToTalk(modal.talk)}</div>
+            <div className="talk-box">{ mapToTalk(modal.talk) }</div>
             <Divider></Divider>
             <div className="input-box">
               <Form.Item>
                 <Input.TextArea
                   rows={4}
                   value={modal.talkValue}
+                  placeholder="请输入回复内容"
                   onChange={(e: any) =>
                     setModal({
                       ...modal,

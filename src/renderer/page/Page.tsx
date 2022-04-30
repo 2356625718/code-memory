@@ -13,7 +13,6 @@ const Page: React.FC = () => {
   useEffect(() => {
     const unSubscribe = store.subscribe(() => {
       const newPathName = store.getState().page.pathName;
-      console.log(newPathName)
       setPathName(newPathName);
     });
     return () => {

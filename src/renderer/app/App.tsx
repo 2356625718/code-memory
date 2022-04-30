@@ -7,50 +7,54 @@ import Menu from './Menu/Menu';
 import Footer from './Footer/Footer';
 import Page from '@/page/page';
 import { setCode } from '@/store/action/code';
+import { setUser } from '@/store/action/user';
+import { setSetting } from '@/store/action/setting';
 const App: React.FC = () => {
   const store = useStore();
 
+  // 读取数据
+  const readFile = async () => {
+    let code = await window.utils.readData()
+    let user = await window.utils.readUser()
+    let setting = await window.utils.readSetting()
+    return {
+      code: code ? code : null,
+      user: user ? user : null,
+      setting: setting ? setting : null,
+    }
+  };
+
+  // 设置数据
+  const setData = async () => {
+    let { code, user, setting } = await readFile()
+    if (Object.getOwnPropertyNames(code.data).length) store.dispatch(setCode(code.data))
+    if (Object.getOwnPropertyNames(user).length) store.dispatch(setUser(user))
+    if (Object.getOwnPropertyNames(setting).length) store.dispatch(setSetting(setting))
+  }
+
+  // 写入数据
+  const writeFile = async () => {
+    const { user, code, setting } = store.getState()
+    if (user) await window.utils.storeUser(user)
+    if (code) await window.utils.storeData(code)
+    if (setting) await window.utils.storeSetting(setting)
+  }
+
   useEffect(() => {
-    console.log(window.electron)
-    // renderer
+    // 监听右键菜单事件
     window.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       window.electron.ipcRenderer.send('show-context-menu');
     });
 
-    // window.electron.ipcOn('context-menu-command', (e: any, command: any) => {
-    //   console.log(command)
-    // });
-    if (!localStorage.getItem('data')) {
-      let data = {
-        codes: [
-          {
-            id: uuidv4(),
-            title: '未命名',
-            code: '',
-            description: '',
-            isTitleChoosed: true,
-            ischangeTitle: false,
-          },
-        ],
-      };
-      localStorage.setItem('data', JSON.stringify(data));
-      store.dispatch(setCode(data.codes));
-    } else {
-      let data = JSON.parse(localStorage.getItem('data') as string);
-      store.dispatch(setCode(data.codes));
-    }
-    return () => {
-      let data = store.getState().code;
-      if (data.length) {
-        localStorage.setItem(
-          'data',
-          JSON.stringify({
-            codes: data,
-          })
-        );
-      }
-    };
+    // 设置数据
+    setData()
+
+    // 监听app关闭
+    window.electron.ipcOn('app-quit', () => {
+      // 软件卸载时进行保存
+      writeFile()
+    })
   }, []);
 
   return (

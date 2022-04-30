@@ -6,8 +6,8 @@ import Share from './Share/Share'
 
 const Community: React.FC = () => {
 
-  const [isCollect, setIsCollect] = useState(false)
-  const [again, setAgain] = useState(false)
+  const [isCollect, setIsCollect] = useState(false) // 记载收藏的代码片段
+  const [again, setAgain] = useState(false) // 重新加载
   return (
     <Row className='community-box'>
       <Col span={18}>

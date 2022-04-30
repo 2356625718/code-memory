@@ -12,7 +12,7 @@ type Iprops = {
 
 const Share: React.FC<Iprops> = (props) => {
   const store = useStore();
-  const user = JSON.parse(sessionStorage.getItem('user') as string);
+  const user = JSON.parse(localStorage.getItem('user') as string);
 
   const [data, setData] = useState({
     item: {

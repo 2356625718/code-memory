@@ -17,23 +17,21 @@ import './Index.less';
 import Editor from '@/components/Editor/Editor';
 import codeRequest from 'request/code';
 
-const code = 'const a = 0;';
-
 const Index: React.FC = () => {
   const store = useStore();
-  const user = JSON.parse(sessionStorage.getItem('user') as string);
+  const user = JSON.parse(localStorage.getItem('user') as string);
   const [data, setData] = useState<Code[]>([]);
   const [controller, setController] = useState({
     isShowDescription: false,
     description: '',
   });
-  const dataRef = useRef(null);
+  const dataRef = useRef<any>(null);
 
   const keyDown = (e: any, index: any) => {
     let code = e.keyCode;
     if (code === 32) e.preventDefault();
     if (code === 13) {
-      let clone = _.cloneDeep(data);
+      let clone = _.cloneDeep(dataRef.current);
       clone[index].title = e.target.value;
       clone[index].ischangeTitle = false;
       setData(clone);
@@ -51,12 +49,12 @@ const Index: React.FC = () => {
   };
 
   useEffect(() => {
-    // @ts-ignore
     dataRef.current = data;
   }, [data]);
 
   useEffect(() => {
     const startData = store.getState().code;
+    console.log(startData);
     if (startData?.length) {
       let isChoosed = startData.some((item: any) => {
         return item?.isTitleChoosed;
@@ -65,21 +63,11 @@ const Index: React.FC = () => {
     }
     setData(startData);
     return () => {
-      store.dispatch(setCode(dataRef.current));
-      storeDataAtServer();
-      let storeData;
-      // @ts-ignore
       if (dataRef.current && dataRef.current.length) {
-        // @ts-ignore
-        storeData = dataRef.current.map((item: any) => {
-          return {
-            prefix: item.title,
-            body: item.code,
-            description: item.description,
-          };
-        });
+        window.utils.storeData(dataRef.current);
+        store.dispatch(setCode(dataRef.current));
+        storeDataAtServer();
       }
-      window.utils.storeDataAtLocal(storeData);
     };
   }, []);
 
@@ -93,7 +81,8 @@ const Index: React.FC = () => {
               <Tooltip title="新增" placement="right">
                 <PlusOutlined
                   onClick={() => {
-                    let clone = _.cloneDeep(data);
+                    let clone = _.cloneDeep(dataRef.current);
+                    console.log(clone);
                     if (clone.length) {
                       clone.forEach((item: any, index: any) => {
                         clone[index].isTitleChoosed = false;
@@ -197,12 +186,13 @@ const Index: React.FC = () => {
         <Col span={20} className="content-box">
           {data.length ? (
             <Editor
-            //@ts-ignore
               data={data?.find((item: any) => item.isTitleChoosed)?.code}
-              id = {data?.find((item: any) => item.isTitleChoosed)?.id}
+              id={data?.find((item: any) => item.isTitleChoosed)?.id}
               changeCode={(str: any) => {
                 let clone: any = _.cloneDeep(dataRef.current);
-                clone[clone.findIndex((item: any) => item.isTitleChoosed)].code = str;
+                clone[
+                  clone.findIndex((item: any) => item.isTitleChoosed)
+                ].code = str;
                 setData(clone);
               }}
             ></Editor>

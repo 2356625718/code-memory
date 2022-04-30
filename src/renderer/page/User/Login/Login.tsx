@@ -1,48 +1,55 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { Form, Input, Button, Tabs, Row, Col, notification } from 'antd';
-import { useStore } from 'react-redux'
+import { useStore } from 'react-redux';
 import { Footer } from 'antd/lib/layout/layout';
-import './Login.less'
-import userRequest from 'request/user'
-import { setUser } from '@/store/action/user'
+import './Login.less';
+import userRequest from 'request/user';
+import { setUser } from '@/store/action/user';
 import _ from 'lodash';
 
 type Iprops = {
-  changePage: Function
-}
-
-
+  changePage: Function;
+};
 
 const { TabPane } = Tabs;
-function callback(key: any) {
-  console.log(key);
-}
+
 
 const Login: React.FC<Iprops> = ({ changePage }) => {
-
   const [loading, setLoading] = useState({
-    loading1: false
-  })
+    loading1: false, // loading中
+  });
 
-  const store = useStore()
+  const store = useStore();
 
+  // 提交表单
   const onFinish = async (values: any) => {
-    console.log('Received values of form: ', values);
+    setLoading({
+      ...loading,
+      loading1: true,
+    });
     let res = await userRequest.login({
       userNameOrPhone: values.username,
-      password: values.password
-    })
+      password: values.password,
+    });
     if (res.data.status) {
       notification.success({
-        message: "登录成功"
-      })
-      store.dispatch(setUser(res.data.data))
-      window.sessionStorage.setItem('user', JSON.stringify(_.cloneDeep(res.data.data)))
-      changePage('user')
+        message: '登录成功',
+      });
+      store.dispatch(setUser(res.data.data));
+      localStorage.setItem('user', JSON.stringify(_.cloneDeep(res.data.data)));
+      setLoading({
+        ...loading,
+        loading1: false,
+      });
+      changePage('user');
     } else {
       notification.error({
-        message: res.data.data || '登录失败'
-      })
+        message: res.data.data || '登录失败',
+      });
+      setLoading({
+        ...loading,
+        loading1: false,
+      });
     }
   };
 
@@ -52,7 +59,12 @@ const Login: React.FC<Iprops> = ({ changePage }) => {
         <h1 className="title">登录</h1>
       </div>
       <div className="login_card">
-        <Tabs type="card" defaultActiveKey="1" onChange={callback} centered style={{ margin: '40px auto' }}>
+        <Tabs
+          type="card"
+          defaultActiveKey="1"
+          centered
+          style={{ margin: '40px auto' }}
+        >
           <TabPane tab="账户密码登录" key="1">
             <Form
               name="normal_login"
@@ -79,28 +91,33 @@ const Login: React.FC<Iprops> = ({ changePage }) => {
                 />
               </Form.Item>
 
-
               <Form.Item>
-                <a style={{ color: '#8C8D9B' }} onClick={() => changePage('register')}>创建账号</a>
+                <a
+                  style={{ color: '#8C8D9B' }}
+                  onClick={() => changePage('register')}
+                >
+                  创建账号
+                </a>
               </Form.Item>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" block style={{ height: '56PX', borderRadius: '12PX' }} disabled={loading.loading1}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  style={{ height: '56PX', borderRadius: '12PX' }}
+                  disabled={loading.loading1}
+                >
                   登录
                 </Button>
               </Form.Item>
             </Form>
-
           </TabPane>
-
         </Tabs>
-
       </div>
-      <Footer className="footer">
-          欢迎使用"代码记忆"
-      </Footer>
+      <Footer className="footer">欢迎使用"代码记忆"</Footer>
     </div>
-  )
-}
+  );
+};
 
 export default Login;

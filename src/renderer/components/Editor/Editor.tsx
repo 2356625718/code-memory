@@ -29,12 +29,11 @@ let change = false;
 
 const Editor: React.FC<IProps> = (props) => {
   const store = useStore();
-  const editor = useRef(null);
-  const editorSetting = store.getState().editor;
+  const editor = useRef<any>(null);
+  const editorSetting = store.getState().setting.editor;
   let [code, setCode] = useState<any>(null);
 
   const setStyle = () => {
-    console.log('setting',editorSetting)
     const el: any = document.getElementsByClassName('CodeMirror')[0];
     const gutter: any =
       document.getElementsByClassName('CodeMirror-gutters')[0];
@@ -42,7 +41,6 @@ const Editor: React.FC<IProps> = (props) => {
     el.style.letterSpacing = editorSetting.letterSpacing + 'px';
     el.style.backgroundColor = editorSetting.backgroundColor;
     gutter.style.backgroundColor = editorSetting.backgroundColor;
-    console.dir(el)
   };
 
   useEffect(() => {

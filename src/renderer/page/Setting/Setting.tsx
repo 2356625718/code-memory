@@ -6,13 +6,12 @@ import color from 'ew-color-picker';
 import 'ew-color-picker/dist/ew-color-picker.min.css';
 import 'ew-color-picker/src/style/ew-color-picker.css';
 import './Setting.less';
-import { changeEditor } from '@/store/action/editor';
-import { current } from 'immer';
+import { changeCurrent, changeEditor } from '@/store/action/setting';
 
 const Setting: React.FC = () => {
   const store = useStore();
-  const colorRef = useRef(null);
-  const stateRef = useRef(null);
+  const colorRef = useRef<any>(null);
+  const stateRef = useRef<any>(null);
   let colorInstance: any;
 
   const [setting, setSetting] = useState({
@@ -30,75 +29,69 @@ const Setting: React.FC = () => {
     },
     current: {
       cloud: true,
-      position: true
-    }
+      position: true,
+    },
   });
 
   useEffect(() => {
-    if (setting.header === 0) {
-      const editorSetting = store.getState().editor;
-      setSetting({
-        ...setting,
-        editor: editorSetting,
+    const storeSetting = store.getState().setting;
+    const { editor, current } = storeSetting;
+    setSetting({
+      header: setting.header,
+      ...storeSetting,
+    });
+    if (setting.header === 0 && colorRef.current) {
+      colorInstance = new color({
+        el: colorRef.current, //dom元素
+        alpha: true, //打开alpha
+        size: {
+          width: 100,
+          height: 35,
+        }, //colorPicker 类型，包含 normal、medium、small、mini 四个值或您自己定义的对象，最小值为 25px
+        defaultColor: editor.backgroundColor,
+        sure: (color: any) => {
+          console.log(color);
+          setSetting({
+            ...setting,
+            editor: {
+              ...setting.editor,
+              backgroundColor: color,
+            },
+          });
+        },
+        clear: (color: any) => {
+          colorInstance.updateColor('rgba(0, 0, 0, 1)');
+          setSetting({
+            ...setting,
+            editor: {
+              ...setting.editor,
+              backgroundColor: 'rgba(0, 0, 0, 1)',
+            },
+          });
+          return false;
+        },
       });
-      if (colorRef.current) {
-        colorInstance = new color({
-          el: colorRef.current, //dom元素
-          alpha: true, //打开alpha
-          size: {
-            width: 100,
-            height: 35,
-          }, //colorPicker 类型，包含 normal、medium、small、mini 四个值或您自己定义的对象，最小值为 25px
-          defaultColor: editorSetting.backgroundColor,
-          sure: (color: any) => {
-            console.log(color);
-            setSetting({
-              ...setting,
-              editor: {
-                ...setting.editor,
-                backgroundColor: color,
-              },
-            });
-          },
-          clear: (color: any) => {
-            colorInstance.updateColor('rgba(0, 0, 0, 1)');
-            setSetting({
-              ...setting,
-              editor: {
-                ...setting.editor,
-                backgroundColor: 'rgba(0, 0, 0, 1)',
-              },
-            });
-            return false;
-          },
-        });
-      }
     }
     return () => {
-      if (setting.header === 0) store.dispatch(changeEditor(stateRef.current));
+      store.dispatch(changeEditor(stateRef.current.editor));
+      store.dispatch(changeCurrent(stateRef.current.current));
     };
   }, [setting.header]);
 
   useEffect(() => {
-    if (setting.header === 0) {
-      // @ts-ignore
-      stateRef.current = setting.editor;
-      // @ts-ignore
-      document.getElementsByClassName(
-        'ew-color-picker-box'
-        // @ts-ignore
-      )[0].style.backgroundColor = setting.editor.backgroundColor;
-    } else if (setting.header === 1) {
-      // @ts-ignore
-      stateRef.current = setting.current;
-    }
+    stateRef.current = setting;
+    const el: any = document.getElementsByClassName('ew-color-picker-box')[0];
+    if (el) el.style.backgroundColor = setting.editor.backgroundColor;
   }, [setting]);
 
   useEffect(() => {
     return () => {
-      window.utils.storePosition(setting.current)
-    }
-  }, [])
+      window.utils.storeSetting({
+        editor: stateRef.current.editor,
+        current: stateRef.current.current,
+      });
+    };
+  }, []);
 
   const data = [
     {
@@ -285,16 +278,18 @@ const Setting: React.FC = () => {
           checkedChildren=" 是 "
           unCheckedChildren=" 否 "
           defaultChecked
-          size='default'
-          style={{marginTop: '10px'}}
+          size="default"
+          style={{ marginTop: '10px' }}
           checked={setting.current.cloud}
-          onChange={(checked) => setSetting({
-            ...setting,
-            current: {
-              ...setting.current,
-              cloud: checked
-            }
-          })}
+          onChange={(checked) =>
+            setSetting({
+              ...setting,
+              current: {
+                ...setting.current,
+                cloud: checked,
+              },
+            })
+          }
         ></Switch>
       ),
     },
@@ -305,19 +300,21 @@ const Setting: React.FC = () => {
           checkedChildren=" 本地文件 "
           unCheckedChildren=" 云端 "
           defaultChecked
-          size='default'
+          size="default"
           checked={setting.current.position}
-          style={{marginTop: '10px'}}
-          onChange={(checked) => setSetting({
-            ...setting,
-            current: {
-              ...setting.current,
-              position: checked
-            }
-          })}
+          style={{ marginTop: '10px' }}
+          onChange={(checked) =>
+            setSetting({
+              ...setting,
+              current: {
+                ...setting.current,
+                position: checked,
+              },
+            })
+          }
         ></Switch>
       ),
-    }
+    },
   ];
 
   return (
@@ -410,9 +407,9 @@ const Setting: React.FC = () => {
                   ...setting,
                   current: {
                     cloud: true,
-                    position: true
-                  }
-                })
+                    position: true,
+                  },
+                });
               }}
             >
               还原默认设置
