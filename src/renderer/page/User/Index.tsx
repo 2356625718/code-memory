@@ -6,7 +6,7 @@ import User from './User'
 const Index: React.FC = () => {
   const [page, setPage] = useState<string>('login')
 
-  if (page !== 'user' && sessionStorage.getItem('user')) {
+  if (page !== 'user' && localStorage.getItem('user')) {
     setPage('user')
   }
 
@@ -18,7 +18,7 @@ const Index: React.FC = () => {
     <>
       { page === 'login' && <Login changePage={changePage}></Login> }
       { page === 'register' && <Register changePage={changePage}></Register>}
-      { page === 'user' && <User></User>}
+      { page === 'user' && <User changePage={changePage}></User>}
     </>
   )
 }

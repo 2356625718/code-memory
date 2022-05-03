@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Layout } from 'antd';
-import { v4 as uuidv4 } from 'uuid';
 import { useStore } from 'react-redux';
 import './App.less';
 import Menu from './Menu/Menu';
@@ -9,14 +8,28 @@ import Page from '@/page/page';
 import { setCode } from '@/store/action/code';
 import { setUser } from '@/store/action/user';
 import { setSetting } from '@/store/action/setting';
+import codeRequest from 'request/code';
+
 const App: React.FC = () => {
   const store = useStore();
 
   // 读取数据
   const readFile = async () => {
-    let code = await window.utils.readData()
+    let code: any
     let user = await window.utils.readUser()
     let setting = await window.utils.readSetting()
+    // 从文件读取
+    if (user.id) {
+      if (setting && setting.current.position) {
+        code = await window.utils.readData()
+        code = code.data
+      // 从服务器读取
+      } else {
+        code = await readDataFromServer(user.id)
+      }
+    } else {
+      code = []
+    }
     return {
       code: code ? code : null,
       user: user ? user : null,
@@ -24,10 +37,32 @@ const App: React.FC = () => {
     }
   };
 
+  const readDataFromServer = async (userId: any) => {
+    let res = await codeRequest.getCode({
+      userId
+    })
+    if (res.data.status) {
+      let data = res.data.data
+      if (data.length) {
+        data = data.map((item: any) => {
+          return {
+            id: item.id,
+            title: item.title,
+            code: item.content,
+            description: item.description,
+            isTitleChoosed: false,
+            isChangeTitle: false
+          }
+        })
+      }
+      return data
+    }
+  }
+
   // 设置数据
   const setData = async () => {
     let { code, user, setting } = await readFile()
-    if (Object.getOwnPropertyNames(code.data).length) store.dispatch(setCode(code.data))
+    if (Object.getOwnPropertyNames(code).length) store.dispatch(setCode(code))
     if (Object.getOwnPropertyNames(user).length) store.dispatch(setUser(user))
     if (Object.getOwnPropertyNames(setting).length) store.dispatch(setSetting(setting))
   }

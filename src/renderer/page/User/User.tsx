@@ -10,7 +10,11 @@ import './User.less';
 import store from '@/store/store';
 import { setUser } from '@/store/action/user';
 
-const User: React.FC = () => {
+type IProps = {
+  changePage: Function
+}
+
+const User: React.FC<IProps> = ({ changePage }) => {
   let user = JSON.parse(localStorage.getItem('user') as string);
   const [upload, setUpload] = useState({
     loading: false,
@@ -152,7 +156,14 @@ const User: React.FC = () => {
   return (
     <div className="user-box">
       <div className="login-out">
-        <Button type="default" danger>
+        <Button type="default" danger onClick={
+          () => {
+            store.dispatch(setUser({}))
+            localStorage.removeItem('user')
+            window.utils.storeUser({})
+            changePage('login')
+          }
+        }>
           退出登录
         </Button>
       </div>

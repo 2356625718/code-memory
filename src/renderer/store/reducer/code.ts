@@ -4,7 +4,10 @@ import { CodeAction } from '../action/code';
 type Code = {
   id: string,
   title: string,
-  code: string
+  description: string,
+  content: string,
+  isTitleChoosed: boolean,
+  isChangeTitle: boolean,
 }
 
 // 初始值

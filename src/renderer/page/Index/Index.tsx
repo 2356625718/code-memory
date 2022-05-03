@@ -54,7 +54,7 @@ const Index: React.FC = () => {
 
   useEffect(() => {
     const startData = store.getState().code;
-    console.log(startData);
+    console.log(startData)
     if (startData?.length) {
       let isChoosed = startData.some((item: any) => {
         return item?.isTitleChoosed;
@@ -64,9 +64,12 @@ const Index: React.FC = () => {
     setData(startData);
     return () => {
       if (dataRef.current && dataRef.current.length) {
-        window.utils.storeData(dataRef.current);
+        const isUpload: boolean = store.getState().setting.current.cloud;
         store.dispatch(setCode(dataRef.current));
-        storeDataAtServer();
+        window.utils.storeData(dataRef.current);
+        if (isUpload) {
+          storeDataAtServer();
+        }
       }
     };
   }, []);
@@ -82,7 +85,6 @@ const Index: React.FC = () => {
                 <PlusOutlined
                   onClick={() => {
                     let clone = _.cloneDeep(dataRef.current);
-                    console.log(clone);
                     if (clone.length) {
                       clone.forEach((item: any, index: any) => {
                         clone[index].isTitleChoosed = false;
@@ -108,7 +110,7 @@ const Index: React.FC = () => {
                   <div
                     key={item.id}
                     className={classNames({
-                      choosed: item.isTitleChoosed,
+                      choosed: item?.isTitleChoosed ? true : false,
                       titleItem: true,
                     })}
                     onClick={() => {
@@ -131,18 +133,18 @@ const Index: React.FC = () => {
                         bordered={false}
                       ></Input>
                     ) : (
-                      <span>{item.title}</span>
+                      <div className='code-title' title={item.title}>{item.title}</div>
                     )}
                     <div className="icons">
                       <FormOutlined
                         className="icon"
                         onClick={(e: any) => {
                           e.stopPropagation();
-                          let clone = _.cloneDeep(data);
+                          let clone = _.cloneDeep(dataRef.current);
                           if (clone.length) {
-                            clone.forEach((item: any, index: any) => {
-                              if (item?.ischangeTitle) {
-                                clone[index].ischangeTitle = false;
+                            clone.forEach((item: any, index2: any) => {
+                              if (index2 !== index) {
+                                clone[index2].ischangeTitle = false;
                               }
                             });
                           }

@@ -36,6 +36,7 @@ const Login: React.FC<Iprops> = ({ changePage }) => {
         message: '登录成功',
       });
       store.dispatch(setUser(res.data.data));
+      window.utils.storeUser(res.data.data)
       localStorage.setItem('user', JSON.stringify(_.cloneDeep(res.data.data)));
       setLoading({
         ...loading,

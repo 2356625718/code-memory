@@ -21,7 +21,7 @@ export const changeCurrent = (option: any): SettingAction => {
   }
 }
 
-export const setSetting= (option: any): SettingAction => {
+export const setSetting = (option: any): SettingAction => {
   return {
     type: 'setSetting',
     payload: {

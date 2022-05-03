@@ -6,7 +6,7 @@ import color from 'ew-color-picker';
 import 'ew-color-picker/dist/ew-color-picker.min.css';
 import 'ew-color-picker/src/style/ew-color-picker.css';
 import './Setting.less';
-import { changeCurrent, changeEditor } from '@/store/action/setting';
+import { setSetting as setAction } from '@/store/action/setting';
 
 const Setting: React.FC = () => {
   const store = useStore();
@@ -15,7 +15,6 @@ const Setting: React.FC = () => {
   let colorInstance: any;
 
   const [setting, setSetting] = useState({
-    header: 0,
     editor: {
       mode: 'text/javascript', //模式
       lineNumbers: true, // 行号
@@ -33,14 +32,15 @@ const Setting: React.FC = () => {
     },
   });
 
+  const [header, setHeader] = useState(0)
+
   useEffect(() => {
     const storeSetting = store.getState().setting;
     const { editor, current } = storeSetting;
     setSetting({
-      header: setting.header,
       ...storeSetting,
     });
-    if (setting.header === 0 && colorRef.current) {
+    if (header === 0 && colorRef.current) {
       colorInstance = new color({
         el: colorRef.current, //dom元素
         alpha: true, //打开alpha
@@ -50,7 +50,6 @@ const Setting: React.FC = () => {
         }, //colorPicker 类型，包含 normal、medium、small、mini 四个值或您自己定义的对象，最小值为 25px
         defaultColor: editor.backgroundColor,
         sure: (color: any) => {
-          console.log(color);
           setSetting({
             ...setting,
             editor: {
@@ -72,11 +71,7 @@ const Setting: React.FC = () => {
         },
       });
     }
-    return () => {
-      store.dispatch(changeEditor(stateRef.current.editor));
-      store.dispatch(changeCurrent(stateRef.current.current));
-    };
-  }, [setting.header]);
+  }, [header]);
 
   useEffect(() => {
     stateRef.current = setting;
@@ -86,6 +81,10 @@ const Setting: React.FC = () => {
 
   useEffect(() => {
     return () => {
+      store.dispatch(setAction({
+        editor: stateRef.current.editor,
+        current: stateRef.current.current
+      }))
       window.utils.storeSetting({
         editor: stateRef.current.editor,
         current: stateRef.current.current,
@@ -324,13 +323,10 @@ const Setting: React.FC = () => {
           <div
             className={classNames({
               settingHeaderItem: true,
-              settingHeaderItemChoosed: setting.header === 0,
+              settingHeaderItemChoosed: header === 0,
             })}
             onClick={() =>
-              setSetting({
-                ...setting,
-                header: 0,
-              })
+              setHeader(0)
             }
           >
             编辑器
@@ -338,13 +334,10 @@ const Setting: React.FC = () => {
           <div
             className={classNames({
               settingHeaderItem: true,
-              settingHeaderItemChoosed: setting.header === 1,
+              settingHeaderItemChoosed: header === 1,
             })}
             onClick={() =>
-              setSetting({
-                ...setting,
-                header: 1,
-              })
+              setHeader(1)
             }
           >
             通用
@@ -352,10 +345,10 @@ const Setting: React.FC = () => {
         </div>
       </div>
       <div className="setting-title">
-        {setting.header === 0 ? '编辑器设置' : '通用设置'}
+        {header === 0 ? '编辑器设置' : '通用设置'}
       </div>
       <div className="setting-body">
-        {setting.header === 0 && (
+        {header === 0 && (
           <>
             {data.map((item: any, index: any) => {
               return (
@@ -389,7 +382,7 @@ const Setting: React.FC = () => {
             </Button>
           </>
         )}
-        {setting.header === 1 && (
+        {header === 1 && (
           <>
             {data2.map((item: any, index: any) => {
               return (

@@ -21,6 +21,7 @@ const settingConfig = {
 const editorReducer = (state = settingConfig, action: SettingAction) => {
   switch (action.type) {
     case 'setSetting': {
+      console.log(action.payload.option)
       return action.payload.option
     }
     case 'changeEditor': {
